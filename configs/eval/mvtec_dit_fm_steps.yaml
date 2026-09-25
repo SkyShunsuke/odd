@@ -1,0 +1,67 @@
+# K-step ablation of the trained flow-matching model on multi-class MVTec AD.
+# One invocation sweeps over ablation_steps and writes eval_results_<K>.csv per K;
+# K = 1 (one-step denoising) is expected to give the best mAD.
+meta:
+  name: vfad
+  global_seed: 0
+  use_bfloat16: false
+data:
+  data_root: data/mvtec_ad
+  dataset_name: mvtec_ad_all
+  category: all
+  test_batch_size: 4     # per-GPU batch size for evaluation
+  num_workers: 8
+  pin_memory: true
+  persistent_workers: false
+  img_size: 256
+  transform_type: imagenet
+flow_matching:
+  scheduler:
+    name: affine_prob
+    t_scheduler_train: linear
+    t_scheduler_infer: linear
+    t_mu: -0.8
+    t_sigma: 0.8
+  solver:
+    name: euler
+  pred_type: velocity    # [data, noise, velocity]
+  loss_type: velocity    # [data, noise, velocity]
+  train_steps: -1
+model:
+  backbone:
+    model_name: efficientnet-b4
+    normalization: null
+    outblocks: [1, 5, 9, 21]
+    outstrides: [2, 4, 8, 16]
+    pretrained: true
+  class_dropout_prob: 0.0
+  cond_channels: 768
+  depth: 12
+  hidden_size: 768
+  learn_sigma: false
+  mlp_ratio: 4.0
+  model_name: dit
+  num_heads: 12
+  patch_size: 1
+  t_scale: 1000
+  use_class_labels: true
+resume:
+  resume_path: ./logs/mvtec_dit_fm/checkpoints/ckpt_best.pth
+logging:
+  log_dir: logs/mvtec_dit_fm/
+  eval:
+    eval_strategy: recon   # options: 'density', 'recon', 'inversion'
+    exact_divergence: false
+    steps: 1
+    ablation_steps: [1, 2, 4, 8, 20, 40, 80, 200]   # default: [-1] disables the sweep
+    # for density estimation if eval_strategy is 'density'
+    hutchinson_samples: 10
+    hutchinson_batch_size: 2
+    # for reconstruction if eval_strategy is 'recon'
+    inv_steps: 20
+    recon_steps: 1         # reconstruction uses inv/recon steps instead of 'steps'
+    inv_stop_time: 0.1     # CondOT perturbation time t0 (smaller = more noise)
+    solver_name: euler
+    img_score_agg: diff+sum
+    metrics: [img_auroc, img_ap, img_f1max, px_auroc, px_ap, px_f1max, px_aupro]
+    save_dir: null

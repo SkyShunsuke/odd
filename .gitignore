@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+logs/*
+!logs/.gitkeep
+data
+wandb/
+vis/
+pretrained/
+*.pth
+*.ckpt
+analysis/velocity_gap/cache/

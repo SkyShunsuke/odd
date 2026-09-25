@@ -1,0 +1,10 @@
+Copyright (c) Anonymous Authors.
+
+This anonymized research code is released for peer review. All rights reserved
+until publication; it will be released under an open-source license upon
+acceptance.
+
+Third-party components retain their own licenses:
+- src/flow_matching/ contains code adapted from Meta Platforms' flow_matching
+  library, licensed under CC BY-NC 4.0 (see file headers).
+- src/utils/adeval/ is a vendored copy of the ADEval package.

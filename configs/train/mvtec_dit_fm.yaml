@@ -1,0 +1,100 @@
+meta:
+  name: vfad
+data:
+  category: all
+  data_root: data/mvtec_ad
+  dataset_name: mvtec_ad_all
+  img_size: 256
+  num_workers: 8
+  persistent_workers: false
+  pin_memory: true
+  test_batch_size: 8
+  train_batch_size: 8
+  transform_type: imagenet
+flow_matching:
+  vf_type: plain          # plain conditional flow matching (CondOT path)
+  loss_type: velocity
+  pred_type: velocity
+  scheduler:
+    name: affine_prob
+    t_mu: -0.8
+    t_scheduler_infer: linear
+    t_scheduler_train: linear
+    t_sigma: 0.8
+  solver:
+    name: euler
+  train_steps: -1
+model:
+  backbone:
+    model_name: efficientnet-b4
+    normalization: null
+    outblocks: [1, 5, 9, 21]
+    outstrides: [2, 4, 8, 16]
+    pretrained: true
+  class_dropout_prob: 0.0
+  cond_channels: 768
+  depth: 12
+  hidden_size: 768
+  learn_sigma: false
+  mlp_ratio: 4.0
+  model_name: dit
+  num_heads: 12
+  patch_size: 1
+  t_scale: 1000
+  use_class_labels: true
+opt:
+  all_gather: false
+  bias_decay: false
+  clip_grad: 1.0
+  epochs: 300
+  fix_lr_strategy: const
+  fix_lr_thres: -1
+  fix_wd_strategy: const
+  fix_wd_thres: -1
+  global_seed: 0
+  ipe_scale: 1.0
+  lr_end: 5.0e-06
+  lr_start: 1.0e-06
+  lr_warmup: 5.0e-05
+  lr_warmup_epochs: 40
+  name: adamw
+  norm_decay: false
+  use_bfloat16: true
+  wd_end: 0.0
+  wd_start: 0.0
+logging:
+  log_dir: logs/mvtec_dit_fm/
+  log_stdout: true
+  log_step_freq: 100
+  use_csv: true
+  use_tensorboard: true
+  ckpt:
+    ckpt_epoch_freq: 50
+    # intermediate checkpoints used for the training-budget axis of the
+    # velocity-gap analysis (analysis/velocity_gap/)
+    ckpt_epoch_list: [5, 10, 20, 40, 80, 120, 160, 200, 250]
+    save_best: true
+    save_latest: false
+    save_model_only: true
+  eval:
+    eval_epoch_freq: 25
+    eval_strategy: recon
+    img_score_agg: diff+sum
+    inv_stop_time: 0.1
+    metrics: [img_auroc, img_ap, img_f1max, px_auroc, px_ap, px_f1max, px_aupro]
+    recon_steps: 1
+    solver_name: euler
+    steps: 1
+  vis:
+    denorm_type: imagenet
+    num_samples_per_class: 16
+    solver_name: midpoint
+    steps: 50
+    vis_epoch_freq: 500
+  wandb:
+    entity: null
+    project_name: odd
+    run_name: mvtec_dit_fm
+    use_wandb: false
+resume:
+  resume_path: null
